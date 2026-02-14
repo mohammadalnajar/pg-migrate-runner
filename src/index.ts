@@ -25,7 +25,7 @@
  *
  * Quick Start:
  * ```ts
- * import { createMigrationRunner } from '@afa/pg-migrate-runner';
+ * import { createMigrationRunner } from 'pg-migrate-runner';
  *
  * const { runner, pool } = createMigrationRunner({ useLock: true });
  * await runner.migrate();

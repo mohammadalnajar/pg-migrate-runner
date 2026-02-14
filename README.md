@@ -19,7 +19,7 @@ Uses `pg` as the only peer dependency — bring your own PostgreSQL client.
 ## Installation
 
 ```bash
-npm install @afa/pg-migrate-runner pg
+npm install pg-migrate-runner pg
 ```
 
 > `pg` is a peer dependency — install it alongside this package.
@@ -29,7 +29,7 @@ npm install @afa/pg-migrate-runner pg
 ### Programmatic API
 
 ```typescript
-import { createMigrationRunner } from '@afa/pg-migrate-runner';
+import { createMigrationRunner } from 'pg-migrate-runner';
 
 // Create runner from environment variables
 const { runner, pool } = createMigrationRunner({
@@ -49,7 +49,7 @@ await pool.end();
 
 ```typescript
 import { Pool } from 'pg';
-import { MigrationRunner } from '@afa/pg-migrate-runner';
+import { MigrationRunner } from 'pg-migrate-runner';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -233,7 +233,7 @@ if (await runner.hasPendingMigrations()) {
 Validate migration SQL for common anti-patterns.
 
 ```typescript
-import { validateMigrationSQL } from '@afa/pg-migrate-runner';
+import { validateMigrationSQL } from 'pg-migrate-runner';
 
 const warnings = validateMigrationSQL(upSql, downSql, 'create_users');
 for (const w of warnings) {
@@ -260,7 +260,7 @@ import {
     MigrationParseError,   // Invalid migration file format
     MigrationRollbackError,// Rollback not possible (no DOWN section)
     MigrationFileNotFoundError // Migration file missing from disk
-} from '@afa/pg-migrate-runner';
+} from 'pg-migrate-runner';
 
 try {
     await runner.migrate();
@@ -280,7 +280,7 @@ try {
 Implement the `MigrationLogger` interface to use any logger:
 
 ```typescript
-import { MigrationLogger, MigrationRunner } from '@afa/pg-migrate-runner';
+import { MigrationLogger, MigrationRunner } from 'pg-migrate-runner';
 
 const myLogger: MigrationLogger = {
     info: (msg, ...args) => winston.info(msg, ...args),
