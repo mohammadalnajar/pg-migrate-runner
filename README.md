@@ -4,6 +4,20 @@ A lightweight, zero-dependency PostgreSQL migration runner for Node.js.
 
 Uses `pg` as the only peer dependency — bring your own PostgreSQL client.
 
+## Why pg-migrate-runner?
+
+Most PostgreSQL migration tools fall into two camps: **external binaries** (like dbmate or golang-migrate) that require installing non-Node tooling, or **heavy ORMs** (like Knex or Sequelize) that bring far more than you need for simple SQL migrations.
+
+**pg-migrate-runner** fills the gap:
+
+- **Pure Node.js** — no Go/Rust binaries, no Docker sidecar, no extra install steps
+- **Zero runtime dependencies** — only `pg` as a peer dependency (which you already have)
+- **Programmatic API + CLI** — use it in code (API routes, scripts, tests) or from the command line
+- **Serverless-friendly** — works in Vercel, AWS Lambda, and containerized environments
+- **Production-safe** — advisory locking prevents concurrent migrations, checksum verification catches modified files
+
+If you want raw SQL migrations with a minimal footprint and full programmatic control, this is for you.
+
 ## Features
 
 - **UP/DOWN migration files** with automatic transaction wrapping
