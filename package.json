@@ -1,13 +1,13 @@
 {
     "name": "pg-migrate-runner",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A lightweight, config-driven PostgreSQL migration runner with advisory locking, dry-run, and pluggable logging.",
     "author": "Mohammad Al-Najar",
     "license": "MIT",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "bin": {
-        "pg-migrate": "dist/cli.js"
+        "pg-migrate-runner": "dist/cli.js"
     },
     "exports": {
         ".": {

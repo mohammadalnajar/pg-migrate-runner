@@ -13,7 +13,7 @@ Uses `pg` as the only peer dependency — bring your own PostgreSQL client.
 - **Pluggable logger** — use console, winston, pino, or any custom logger
 - **SQL anti-pattern validation** — warns about missing IF NOT EXISTS, destructive ops, etc.
 - **Config-driven or legacy constructor** — flexible initialization
-- **CLI binary** (`pg-migrate`) — run migrations from the command line
+- **CLI binary** (`pg-migrate-runner`) — run migrations from the command line
 - **TypeScript-first** — full type definitions included
 
 ## Installation
@@ -68,28 +68,28 @@ await pool.end();
 
 ```bash
 # Apply all pending migrations
-pg-migrate up
+pg-migrate-runner up
 
 # Preview what would happen (dry run)
-pg-migrate up --dry-run
+pg-migrate-runner up --dry-run
 
 # Show migration status
-pg-migrate status
+pg-migrate-runner status
 
 # Rollback last migration
-pg-migrate rollback
+pg-migrate-runner rollback
 
 # Rollback last 3 migrations
-pg-migrate rollback 3
+pg-migrate-runner rollback 3
 
 # Create a new migration file
-pg-migrate create add_users_table
+pg-migrate-runner create add_users_table
 
 # Custom migrations directory
-pg-migrate up --dir ./db/migrations
+pg-migrate-runner up --dir ./db/migrations
 
 # Disable advisory locking
-pg-migrate up --no-lock
+pg-migrate-runner up --no-lock
 ```
 
 ## Migration File Format
@@ -118,7 +118,7 @@ Migration files must follow the pattern: `YYYYMMDDHHMMSS_snake_case_name.sql`
 
 Example: `20240115143000_create_users_table.sql`
 
-Use `pg-migrate create <name>` to generate files with the correct naming and a helpful template.
+Use `pg-migrate-runner create <name>` to generate files with the correct naming and a helpful template.
 
 ## API Reference
 

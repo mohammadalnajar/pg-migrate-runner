@@ -5,10 +5,10 @@
  * Standalone command-line interface for PostgreSQL migrations.
  *
  * Commands:
- *   pg-migrate up              Apply all pending migrations
- *   pg-migrate status          Show migration status
- *   pg-migrate rollback [N]    Rollback last N migrations (default: 1)
- *   pg-migrate create <name>   Create a new migration file
+ *   pg-migrate-runner up              Apply all pending migrations
+ *   pg-migrate-runner status          Show migration status
+ *   pg-migrate-runner rollback [N]    Rollback last N migrations (default: 1)
+ *   pg-migrate-runner create <name>   Create a new migration file
  *
  * Flags:
  *   --dry-run       Preview changes without modifying the database
@@ -59,7 +59,7 @@ function printHelp(): void {
 ${color.bold('pg-migrate-runner')} v${getVersion()}
 
 ${color.bold('Usage:')}
-  pg-migrate <command> [options]
+  pg-migrate-runner <command> [options]
 
 ${color.bold('Commands:')}
   up                    Apply all pending migrations
@@ -86,13 +86,13 @@ ${color.bold('Environment Variables:')}
   PG_HOST / PG_PORT / PG_DATABASE / PG_USER / PG_PASSWORD   Alternative names
 
 ${color.bold('Examples:')}
-  pg-migrate up
-  pg-migrate up --dry-run
-  pg-migrate status
-  pg-migrate rollback 3
-  pg-migrate rollback --dry-run
-  pg-migrate create add_users_table
-  pg-migrate up --dir ./db/migrations --no-lock
+  pg-migrate-runner up
+  pg-migrate-runner up --dry-run
+  pg-migrate-runner status
+  pg-migrate-runner rollback 3
+  pg-migrate-runner rollback --dry-run
+  pg-migrate-runner create add_users_table
+  pg-migrate-runner up --dir ./db/migrations --no-lock
 `);
 }
 
@@ -344,7 +344,7 @@ function cmdCreate(parsed: ParsedArgs): void {
     const name = parsed.rest.join('_');
     if (!name) {
         console.error(color.red('Please provide a migration name.'));
-        console.log(color.gray('  Example: pg-migrate create add_users_table'));
+        console.log(color.gray('  Example: pg-migrate-runner create add_users_table'));
         process.exitCode = 1;
         return;
     }
@@ -357,7 +357,7 @@ function cmdCreate(parsed: ParsedArgs): void {
         console.log(color.greenBold('\nCreated migration file:'));
         console.log(color.cyan(`  ${result.filename}`));
         console.log(color.gray(`  ${result.filepath}`));
-        console.log(`\nEdit the file, then run ${color.bold('pg-migrate up')} to apply.\n`);
+        console.log(`\nEdit the file, then run ${color.bold('pg-migrate-runner up')} to apply.\n`);
     } catch (error: any) {
         console.error(color.red(error.message));
         process.exitCode = 1;
