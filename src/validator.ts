@@ -14,6 +14,10 @@ import { ValidationWarning } from './types';
  * - Empty UP/DOWN sections
  * - CREATE TABLE/INDEX without IF NOT EXISTS
  * - DROP TABLE/INDEX without IF EXISTS
+ * - DROP + CREATE anti-pattern (prefer CREATE IF NOT EXISTS)
+ * - DROP TABLE/SEQUENCE/VIEW/FUNCTION/TYPE without CASCADE
+ * - ADD CONSTRAINT without idempotency guard
+ * - INSERT without ON CONFLICT
  * - Destructive operations (DROP COLUMN, TRUNCATE, DELETE without WHERE)
  * - Manual transaction control (BEGIN/COMMIT/ROLLBACK)
  * - ALTER TYPE ... ADD VALUE (cannot run in a transaction)
@@ -143,6 +147,60 @@ export function validateMigrationSQL(
                 });
             }
         });
+
+        // DROP + CREATE pattern — prefer CREATE IF NOT EXISTS for idempotency
+        const upUpper = upSql.toUpperCase();
+        if (
+            (upUpper.match(/DROP\s+TABLE\b/) && upUpper.match(/CREATE\s+TABLE\b/)) ||
+            (upUpper.match(/DROP\s+SEQUENCE\b/) && upUpper.match(/CREATE\s+SEQUENCE\b/))
+        ) {
+            warnings.push({
+                level: 'warning',
+                message: `DROP + CREATE pattern detected in UP section${label}. Prefer CREATE ... IF NOT EXISTS for idempotent migrations. DROP can fail if other objects depend on the dropped object.`
+            });
+        }
+
+        // DROP TABLE/SEQUENCE/VIEW/FUNCTION/TYPE without CASCADE in UP
+        upLines.forEach((line, idx) => {
+            const trimmed = line.trim().toUpperCase();
+            if (
+                trimmed.match(/^DROP\s+(TABLE|SEQUENCE|VIEW|FUNCTION|TYPE)\b/) &&
+                !trimmed.includes('CASCADE')
+            ) {
+                warnings.push({
+                    level: 'warning',
+                    message: `DROP without CASCADE${label}. If other objects depend on this, the migration will fail. Consider adding CASCADE.`,
+                    line: idx + 1
+                });
+            }
+        });
+
+        // ADD CONSTRAINT without idempotency guard
+        upLines.forEach((line, idx) => {
+            const trimmed = line.trim().toUpperCase();
+            if (trimmed.match(/ADD\s+CONSTRAINT\b/) && !upSql.includes('pg_constraint')) {
+                warnings.push({
+                    level: 'warning',
+                    message: `ADD CONSTRAINT without idempotency guard${label}. Will fail if the constraint already exists. Wrap in a DO $$ block checking pg_constraint, or use a separate migration.`,
+                    line: idx + 1
+                });
+            }
+        });
+
+        // INSERT without ON CONFLICT
+        upLines.forEach((line, idx) => {
+            const trimmed = line.trim().toUpperCase();
+            if (
+                trimmed.match(/^INSERT\s+INTO\b/) &&
+                !upUpper.includes('ON CONFLICT')
+            ) {
+                warnings.push({
+                    level: 'warning',
+                    message: `INSERT without ON CONFLICT${label}. If this migration is re-run or data already exists, it will fail on unique constraints. Consider adding ON CONFLICT DO NOTHING or ON CONFLICT DO UPDATE.`,
+                    line: idx + 1
+                });
+            }
+        });
     }
 
     // ─── DOWN SQL checks ───
@@ -188,6 +246,21 @@ export function validateMigrationSQL(
                 warnings.push({
                     level: 'error',
                     message: `Do not use ${trimmed.replace(';', '')} in DOWN section${label}. The runner wraps rollbacks in a transaction automatically.`,
+                    line: idx + 1
+                });
+            }
+        });
+
+        // DROP TABLE/SEQUENCE without CASCADE in DOWN
+        downLines.forEach((line, idx) => {
+            const trimmed = line.trim().toUpperCase();
+            if (
+                trimmed.match(/^DROP\s+(TABLE|SEQUENCE)\b/) &&
+                !trimmed.includes('CASCADE')
+            ) {
+                warnings.push({
+                    level: 'warning',
+                    message: `DROP without CASCADE in DOWN section${label}. If other objects depend on this, rollback will fail. Consider adding CASCADE.`,
                     line: idx + 1
                 });
             }
