@@ -190,10 +190,7 @@ export function validateMigrationSQL(
         // INSERT without ON CONFLICT
         upLines.forEach((line, idx) => {
             const trimmed = line.trim().toUpperCase();
-            if (
-                trimmed.match(/^INSERT\s+INTO\b/) &&
-                !upUpper.includes('ON CONFLICT')
-            ) {
+            if (trimmed.match(/^INSERT\s+INTO\b/) && !upUpper.includes('ON CONFLICT')) {
                 warnings.push({
                     level: 'warning',
                     message: `INSERT without ON CONFLICT${label}. If this migration is re-run or data already exists, it will fail on unique constraints. Consider adding ON CONFLICT DO NOTHING or ON CONFLICT DO UPDATE.`,
@@ -254,10 +251,7 @@ export function validateMigrationSQL(
         // DROP TABLE/SEQUENCE without CASCADE in DOWN
         downLines.forEach((line, idx) => {
             const trimmed = line.trim().toUpperCase();
-            if (
-                trimmed.match(/^DROP\s+(TABLE|SEQUENCE)\b/) &&
-                !trimmed.includes('CASCADE')
-            ) {
+            if (trimmed.match(/^DROP\s+(TABLE|SEQUENCE)\b/) && !trimmed.includes('CASCADE')) {
                 warnings.push({
                     level: 'warning',
                     message: `DROP without CASCADE in DOWN section${label}. If other objects depend on this, rollback will fail. Consider adding CASCADE.`,
