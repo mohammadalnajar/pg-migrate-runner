@@ -1,4 +1,4 @@
-# pg-migrate-runner
+# pg-migrate-runner [![npm version](https://img.shields.io/npm/v/pg-migrate-runner.svg)](https://www.npmjs.com/package/pg-migrate-runner)
 
 A lightweight, zero-dependency PostgreSQL migration runner for Node.js.
 
