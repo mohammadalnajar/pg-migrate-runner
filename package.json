@@ -1,0 +1,58 @@
+{
+    "name": "@afa/pg-migrate-runner",
+    "version": "1.0.0",
+    "description": "A lightweight, config-driven PostgreSQL migration runner with advisory locking, dry-run, and pluggable logging.",
+    "author": "Mohammad Al-Najar",
+    "license": "MIT",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "bin": {
+        "pg-migrate": "dist/cli.js"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.js",
+            "import": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "clean": "rm -rf dist",
+        "prepublishOnly": "npm run clean && npm run build"
+    },
+    "peerDependencies": {
+        "pg": ">=8.0.0"
+    },
+    "devDependencies": {
+        "@types/pg": "^8.11.0",
+        "@types/node": "^20.0.0",
+        "pg": "^8.12.0",
+        "typescript": "^5.0.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "keywords": [
+        "postgresql",
+        "postgres",
+        "migration",
+        "migrations",
+        "database",
+        "schema",
+        "sql",
+        "migrate",
+        "rollback",
+        "advisory-lock",
+        "dry-run"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mohammadalnajar/pg-migrate-runner.git"
+    }
+}
