@@ -92,6 +92,62 @@ pg-migrate-runner up --dir ./db/migrations
 pg-migrate-runner up --no-lock
 ```
 
+### Usage in npm Scripts
+
+The CLI reads database config from environment variables (see [Environment Variables](#environment-variables)).
+It does **not** load `.env` files automatically — this is by design to keep the package dependency-free.
+
+#### When env vars are already set (Docker, CI/CD, production)
+
+The CLI works directly — no extra setup needed:
+
+```json
+{
+  "scripts": {
+    "migrate": "pg-migrate-runner up",
+    "migrate:status": "pg-migrate-runner status",
+    "migrate:rollback": "pg-migrate-runner rollback",
+    "migrate:create": "pg-migrate-runner create"
+  }
+}
+```
+
+Docker Compose example:
+```yaml
+services:
+  app:
+    environment:
+      POSTGRESQL_HOST: postgres
+      POSTGRESQL_DATABASE: mydb
+      POSTGRESQL_USER: myuser
+      POSTGRESQL_PASSWORD: mypass
+    command: ["pg-migrate-runner", "up"]
+```
+
+#### When using a `.env` file (local development)
+
+Use `node -r dotenv/config` to preload the `.env` file before the CLI runs.
+
+> **Important:** When using `node -r`, you must provide the full path to the binary
+> (`./node_modules/.bin/pg-migrate-runner`), because Node interprets the argument
+> as a module path, not a shell command.
+
+```json
+{
+  "scripts": {
+    "migrate": "node -r dotenv/config ./node_modules/.bin/pg-migrate-runner up",
+    "migrate:status": "node -r dotenv/config ./node_modules/.bin/pg-migrate-runner status",
+    "migrate:rollback": "node -r dotenv/config ./node_modules/.bin/pg-migrate-runner rollback",
+    "migrate:create": "node -r dotenv/config ./node_modules/.bin/pg-migrate-runner create"
+  }
+}
+```
+
+Make sure `dotenv` is installed:
+```bash
+npm install --save-dev dotenv
+```
+
 ## Migration File Format
 
 Migration files use a simple SQL format with `-- migrate:up` and `-- migrate:down` markers:
