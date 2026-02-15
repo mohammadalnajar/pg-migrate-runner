@@ -29,9 +29,7 @@ describe('DefaultLogger', () => {
     it('should log warn messages to console.warn', () => {
         const logger = new DefaultLogger();
         logger.warn('warning message');
-        expect(consoleSpy.warn).toHaveBeenCalledWith(
-            expect.stringContaining('warning message')
-        );
+        expect(consoleSpy.warn).toHaveBeenCalledWith(expect.stringContaining('warning message'));
     });
 
     it('should log error messages to console.error', () => {

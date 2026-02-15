@@ -111,8 +111,6 @@ describe('releaseLock', () => {
         };
 
         await releaseLock(mockClient as any, DEFAULT_LOCK_ID, mockLogger);
-        expect(mockLogger.warn).toHaveBeenCalledWith(
-            expect.stringContaining('connection lost')
-        );
+        expect(mockLogger.warn).toHaveBeenCalledWith(expect.stringContaining('connection lost'));
     });
 });

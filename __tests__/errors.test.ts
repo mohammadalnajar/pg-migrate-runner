@@ -135,11 +135,7 @@ describe('MigrationParseError', () => {
 
 describe('MigrationRollbackError', () => {
     it('should be an instance of MigrationError', () => {
-        const err = new MigrationRollbackError(
-            '20260214120000',
-            'add_users',
-            'no down section'
-        );
+        const err = new MigrationRollbackError('20260214120000', 'add_users', 'no down section');
         expect(err).toBeInstanceOf(MigrationError);
         expect(err).toBeInstanceOf(MigrationRollbackError);
     });

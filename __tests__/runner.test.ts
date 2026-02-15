@@ -203,21 +203,19 @@ DROP TABLE IF EXISTS test;
             fs.writeFileSync(path.join(tmpDir, '20260214110000_first.sql'), template('first'));
             fs.writeFileSync(path.join(tmpDir, '20260214120000_second.sql'), template('second'));
 
-            mockPool.query
-                .mockResolvedValueOnce({ rows: [], rowCount: 0 })
-                .mockResolvedValueOnce({
-                    rows: [
-                        {
-                            id: 1,
-                            version: '20260214110000',
-                            name: 'first',
-                            applied_at: '2026-02-14T11:00:00Z',
-                            execution_time_ms: 10,
-                            checksum: computeChecksum('CREATE TABLE first (id int);')
-                        }
-                    ],
-                    rowCount: 1
-                });
+            mockPool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 }).mockResolvedValueOnce({
+                rows: [
+                    {
+                        id: 1,
+                        version: '20260214110000',
+                        name: 'first',
+                        applied_at: '2026-02-14T11:00:00Z',
+                        execution_time_ms: 10,
+                        checksum: computeChecksum('CREATE TABLE first (id int);')
+                    }
+                ],
+                rowCount: 1
+            });
 
             const runner = new MigrationRunner(mockPool as any, tmpDir);
             const pending = await runner.getPendingMigrations();
@@ -584,21 +582,19 @@ DROP TABLE IF EXISTS test;
             fs.writeFileSync(path.join(tmpDir, '20260214110000_applied.sql'), template('applied'));
             fs.writeFileSync(path.join(tmpDir, '20260214120000_pending.sql'), template('pending'));
 
-            mockPool.query
-                .mockResolvedValueOnce({ rows: [], rowCount: 0 })
-                .mockResolvedValueOnce({
-                    rows: [
-                        {
-                            id: 1,
-                            version: '20260214110000',
-                            name: 'applied',
-                            applied_at: '2026-02-14T11:00:00Z',
-                            execution_time_ms: 10,
-                            checksum: computeChecksum('CREATE TABLE applied (id int);')
-                        }
-                    ],
-                    rowCount: 1
-                });
+            mockPool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 }).mockResolvedValueOnce({
+                rows: [
+                    {
+                        id: 1,
+                        version: '20260214110000',
+                        name: 'applied',
+                        applied_at: '2026-02-14T11:00:00Z',
+                        execution_time_ms: 10,
+                        checksum: computeChecksum('CREATE TABLE applied (id int);')
+                    }
+                ],
+                rowCount: 1
+            });
 
             const runner = new MigrationRunner(mockPool as any, tmpDir);
             const summary = await runner.getSummary();
