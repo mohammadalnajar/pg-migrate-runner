@@ -16,8 +16,10 @@ import { ValidationWarning } from './types';
  * - DROP TABLE/INDEX without IF EXISTS
  * - DROP + CREATE anti-pattern (prefer CREATE IF NOT EXISTS)
  * - DROP TABLE/SEQUENCE/VIEW/FUNCTION/TYPE without CASCADE
+ * - ADD COLUMN without IF NOT EXISTS
  * - ADD CONSTRAINT without idempotency guard
  * - INSERT without ON CONFLICT
+ * - RAISE outside DO $$ block (syntax error in plain SQL)
  * - Destructive operations (DROP COLUMN, TRUNCATE, DELETE without WHERE)
  * - Manual transaction control (BEGIN/COMMIT/ROLLBACK)
  * - ALTER TYPE ... ADD VALUE (cannot run in a transaction)
@@ -69,6 +71,34 @@ export function validateMigrationSQL(
                 warnings.push({
                     level: 'warning',
                     message: `CREATE INDEX without IF NOT EXISTS${label}. Consider: CREATE INDEX IF NOT EXISTS`,
+                    line: idx + 1
+                });
+            }
+        });
+
+        // ADD COLUMN without IF NOT EXISTS
+        upLines.forEach((line, idx) => {
+            const trimmed = line.trim().toUpperCase();
+            if (trimmed.match(/ADD\s+COLUMN\b/) && !trimmed.includes('IF NOT EXISTS')) {
+                warnings.push({
+                    level: 'warning',
+                    message: `ADD COLUMN without IF NOT EXISTS${label}. Will fail if the column already exists. Use: ADD COLUMN IF NOT EXISTS`,
+                    line: idx + 1
+                });
+            }
+        });
+
+        // RAISE outside DO $$ block — RAISE is a PL/pgSQL statement and causes
+        // syntax errors when used in plain SQL context.
+        // We strip out DO $$ ... END $$ blocks first, then check remaining lines.
+        const upWithoutDoBlocks = upSql.replace(/DO\s+\$\$[\s\S]*?\$\$/gi, '');
+        const upRemainingLines = upWithoutDoBlocks.split('\n');
+        upRemainingLines.forEach((line, idx) => {
+            const trimmed = line.trim().toUpperCase();
+            if (trimmed.match(/^RAISE\s+(NOTICE|WARNING|EXCEPTION|INFO|LOG|DEBUG)\b/)) {
+                warnings.push({
+                    level: 'error',
+                    message: `RAISE statement outside DO $$ block${label}. RAISE is PL/pgSQL and must be inside a DO $$ BEGIN ... END $$ block.`,
                     line: idx + 1
                 });
             }
@@ -255,6 +285,32 @@ export function validateMigrationSQL(
                 warnings.push({
                     level: 'warning',
                     message: `DROP without CASCADE in DOWN section${label}. If other objects depend on this, rollback will fail. Consider adding CASCADE.`,
+                    line: idx + 1
+                });
+            }
+        });
+
+        // ADD COLUMN without IF NOT EXISTS in DOWN
+        downLines.forEach((line, idx) => {
+            const trimmed = line.trim().toUpperCase();
+            if (trimmed.match(/ADD\s+COLUMN\b/) && !trimmed.includes('IF NOT EXISTS')) {
+                warnings.push({
+                    level: 'warning',
+                    message: `ADD COLUMN without IF NOT EXISTS in DOWN section${label}. Will fail if the column already exists. Use: ADD COLUMN IF NOT EXISTS`,
+                    line: idx + 1
+                });
+            }
+        });
+
+        // RAISE outside DO $$ block in DOWN
+        const downWithoutDoBlocks = downSql.replace(/DO\s+\$\$[\s\S]*?\$\$/gi, '');
+        const downRemainingLines = downWithoutDoBlocks.split('\n');
+        downRemainingLines.forEach((line, idx) => {
+            const trimmed = line.trim().toUpperCase();
+            if (trimmed.match(/^RAISE\s+(NOTICE|WARNING|EXCEPTION|INFO|LOG|DEBUG)\b/)) {
+                warnings.push({
+                    level: 'error',
+                    message: `RAISE statement outside DO $$ block in DOWN section${label}. RAISE is PL/pgSQL and must be inside a DO $$ BEGIN ... END $$ block.`,
                     line: idx + 1
                 });
             }

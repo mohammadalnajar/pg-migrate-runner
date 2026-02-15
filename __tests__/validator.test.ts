@@ -473,4 +473,118 @@ END $$;`;
         );
         expect(insertWarnings).toHaveLength(0);
     });
+
+    // ─── ADD COLUMN without IF NOT EXISTS ─────────────────────────────────
+
+    it('should warn for ADD COLUMN without IF NOT EXISTS in UP', () => {
+        const warnings = validateMigrationSQL(
+            'ALTER TABLE users ADD COLUMN email varchar(255);',
+            'ALTER TABLE users DROP COLUMN IF EXISTS email;'
+        );
+        expect(warnings).toContainEqual(
+            expect.objectContaining({
+                level: 'warning',
+                message: expect.stringContaining('ADD COLUMN without IF NOT EXISTS')
+            })
+        );
+    });
+
+    it('should NOT warn for ADD COLUMN IF NOT EXISTS in UP', () => {
+        const warnings = validateMigrationSQL(
+            'ALTER TABLE users ADD COLUMN IF NOT EXISTS email varchar(255);',
+            'ALTER TABLE users DROP COLUMN IF EXISTS email;'
+        );
+        const addColWarnings = warnings.filter((w) =>
+            w.message.includes('ADD COLUMN without IF NOT EXISTS')
+        );
+        expect(addColWarnings).toHaveLength(0);
+    });
+
+    it('should warn for ADD COLUMN without IF NOT EXISTS in DOWN', () => {
+        const warnings = validateMigrationSQL(
+            'ALTER TABLE users DROP COLUMN IF EXISTS email;',
+            'ALTER TABLE users ADD COLUMN email varchar(255);'
+        );
+        expect(warnings).toContainEqual(
+            expect.objectContaining({
+                level: 'warning',
+                message: expect.stringContaining('ADD COLUMN without IF NOT EXISTS in DOWN')
+            })
+        );
+    });
+
+    it('should NOT warn for ADD COLUMN IF NOT EXISTS in DOWN', () => {
+        const warnings = validateMigrationSQL(
+            'ALTER TABLE users DROP COLUMN IF EXISTS email;',
+            'ALTER TABLE users ADD COLUMN IF NOT EXISTS email varchar(255);'
+        );
+        const addColWarnings = warnings.filter((w) =>
+            w.message.includes('ADD COLUMN without IF NOT EXISTS')
+        );
+        expect(addColWarnings).toHaveLength(0);
+    });
+
+    // ─── RAISE outside DO $$ block ────────────────────────────────────────
+
+    it('should error for RAISE NOTICE outside DO block in UP', () => {
+        const warnings = validateMigrationSQL(
+            "RAISE NOTICE 'Migration complete';",
+            'SELECT 1;'
+        );
+        expect(warnings).toContainEqual(
+            expect.objectContaining({
+                level: 'error',
+                message: expect.stringContaining('RAISE statement outside DO $$ block')
+            })
+        );
+    });
+
+    it('should error for RAISE WARNING outside DO block in UP', () => {
+        const warnings = validateMigrationSQL(
+            "RAISE WARNING 'Something went wrong';",
+            'SELECT 1;'
+        );
+        expect(warnings).toContainEqual(
+            expect.objectContaining({
+                level: 'error',
+                message: expect.stringContaining('RAISE statement outside DO $$ block')
+            })
+        );
+    });
+
+    it('should error for RAISE NOTICE outside DO block in DOWN', () => {
+        const warnings = validateMigrationSQL(
+            'SELECT 1;',
+            "RAISE NOTICE 'Rollback complete';"
+        );
+        expect(warnings).toContainEqual(
+            expect.objectContaining({
+                level: 'error',
+                message: expect.stringContaining('RAISE statement outside DO $$ block in DOWN')
+            })
+        );
+    });
+
+    it('should NOT error for RAISE inside a DO $$ block', () => {
+        const upSql = `DO $$ BEGIN
+    RAISE NOTICE 'Migration complete';
+END $$;`;
+        const warnings = validateMigrationSQL(upSql, 'SELECT 1;');
+        const raiseWarnings = warnings.filter((w) =>
+            w.message.includes('RAISE statement outside DO')
+        );
+        expect(raiseWarnings).toHaveLength(0);
+    });
+
+    it('should detect multiple ADD COLUMN issues in one migration', () => {
+        const warnings = validateMigrationSQL(
+            `ALTER TABLE users ADD COLUMN email varchar(255);
+ALTER TABLE users ADD COLUMN phone varchar(20);`,
+            'SELECT 1;'
+        );
+        const addColWarnings = warnings.filter((w) =>
+            w.message.includes('ADD COLUMN without IF NOT EXISTS')
+        );
+        expect(addColWarnings).toHaveLength(2);
+    });
 });
