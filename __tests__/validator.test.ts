@@ -527,10 +527,7 @@ END $$;`;
     // ─── RAISE outside DO $$ block ────────────────────────────────────────
 
     it('should error for RAISE NOTICE outside DO block in UP', () => {
-        const warnings = validateMigrationSQL(
-            "RAISE NOTICE 'Migration complete';",
-            'SELECT 1;'
-        );
+        const warnings = validateMigrationSQL("RAISE NOTICE 'Migration complete';", 'SELECT 1;');
         expect(warnings).toContainEqual(
             expect.objectContaining({
                 level: 'error',
@@ -540,10 +537,7 @@ END $$;`;
     });
 
     it('should error for RAISE WARNING outside DO block in UP', () => {
-        const warnings = validateMigrationSQL(
-            "RAISE WARNING 'Something went wrong';",
-            'SELECT 1;'
-        );
+        const warnings = validateMigrationSQL("RAISE WARNING 'Something went wrong';", 'SELECT 1;');
         expect(warnings).toContainEqual(
             expect.objectContaining({
                 level: 'error',
@@ -553,10 +547,7 @@ END $$;`;
     });
 
     it('should error for RAISE NOTICE outside DO block in DOWN', () => {
-        const warnings = validateMigrationSQL(
-            'SELECT 1;',
-            "RAISE NOTICE 'Rollback complete';"
-        );
+        const warnings = validateMigrationSQL('SELECT 1;', "RAISE NOTICE 'Rollback complete';");
         expect(warnings).toContainEqual(
             expect.objectContaining({
                 level: 'error',
