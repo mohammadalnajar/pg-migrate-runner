@@ -2,3 +2,6 @@ src/
 *.ts
 tsconfig.json
 .gitignore
+__tests__/
+jest.config.js
+.github/
